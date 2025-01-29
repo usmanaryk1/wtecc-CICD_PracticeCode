@@ -27,3 +27,33 @@ spec:
           value: "$(params.message)"
 
 # kubectl apply -f pipeline.yaml
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cd-pipeline
+spec:
+  params:
+    - name: repo-url
+    - name: branch
+      default: "master"
+  tasks:
+    - name: clone
+      taskRef:
+        name: checkout
+      params:
+      - name: repo-url
+        value: "$(params.repo-url)"
+      - name: branch
+        value: "$(params.branch)"
+
+# kubectl apply -f pipeline.yaml
+
+# Run the cd-pipeline
+# tkn pipeline start cd-pipeline --showlog -p repo-url="https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git" -p branch="main"
+
+# output
+# PipelineRun started: cd-pipeline-run-rf6zp
+# Waiting for logs to be available...
+# [clone : checkout] Cloning into 'wtecc-CICD_PracticeCode'...
