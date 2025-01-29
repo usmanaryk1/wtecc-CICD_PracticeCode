@@ -57,3 +57,81 @@ spec:
 # PipelineRun started: cd-pipeline-run-rf6zp
 # Waiting for logs to be available...
 # [clone : checkout] Cloning into 'wtecc-CICD_PracticeCode'...
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: cd-pipeline
+spec:
+  params:
+    - name: repo-url
+    - name: branch
+      default: "master"
+  tasks:
+    - name: clone
+      taskRef:
+        name: checkout
+      params:
+      - name: repo-url
+        value: "$(params.repo-url)"
+      - name: branch
+        value: "$(params.branch)"
+
+    - name: lint
+      taskRef:
+        name: echo
+      params:
+      - name: message
+        value: "Calling Flake8 linter..."
+      runAfter:
+        - clone
+
+    - name: tests
+      taskRef:
+        name: echo
+      params:
+      - name: message
+        value: "Running unit tests with PyUnit..."
+      runAfter:
+        - lint
+
+    - name: build
+      taskRef:
+        name: echo
+      params:
+      - name: message
+        value: "Building image for $(params.repo-url) ..."
+      runAfter:
+        - tests
+
+    - name: deploy
+      taskRef:
+        name: echo
+      params:
+      - name: message
+        value: "Deploying $(params.branch) branch of $(params.repo-url) ..."
+      runAfter:
+        - build
+
+# kubectl apply -f pipeline.yaml
+
+# Run the cd-pipeline
+# tkn pipeline start cd-pipeline \
+#     --showlog \
+#     -p repo-url="https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git" \
+#     -p branch="main"
+
+# output
+
+# PipelineRun started: cd-pipeline-run-wvfzx
+# Waiting for logs to be available...
+# [clone : checkout] Cloning into 'wtecc-CICD_PracticeCode'...
+
+# [lint : echo-message] Calling Flake8 linter...
+
+# [tests : echo-message] Running unit tests with PyUnit...
+
+# [build : echo-message] Building image for https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git ...
+
+# [deploy : echo-message] Deploying main branch of https://github.com/ibm-developer-skills-network/wtecc-CICD_PracticeCode.git ...
